@@ -16,5 +16,8 @@
   "bugs": {
     "url": "https://github.com/cupokyle/tinyapp/issues"
   },
-  "homepage": "https://github.com/cupokyle/tinyapp#readme"
+  "homepage": "https://github.com/cupokyle/tinyapp#readme",
+  "dependencies": {
+    "express": "^4.17.1"
+  }
 }
