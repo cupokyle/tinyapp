@@ -47,7 +47,7 @@ app.get("/hello", (req, res) => {
 
 //Route handler for the URLS page
 app.get("/urls", (req, res) => {
-  const templateVars = { urls: urlDatabase };
+  const templateVars = { urls: urlDatabase , username: req.cookies['username']};
   res.render("urls_index", templateVars);
 });
 
@@ -97,13 +97,16 @@ app.get("/u/:shortURL", (req, res) => {
 
 // Route for New URL form
 app.get("/urls/new", (req, res) => {
-  res.render("urls_new");
+  const templateVars = {
+    username: req.cookies["username"],
+  };
+  res.render("urls_new", templateVars);
 });
 
 
 // Route handler that takes in a shortURL parameter
 app.get("/urls/:shortURL", (req, res) => {
-  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] };
+  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], username: req.cookies["username"],};
   res.render("urls_show", templateVars);
 });
 
