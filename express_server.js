@@ -3,7 +3,9 @@ const express = require("express");
 const app = express();
 const PORT = 8080; // default port 8080
 const bodyParser = require("body-parser");
+let cookieParser = require('cookie-parser');
 app.use(bodyParser.urlencoded({extended: true}));
+app.use(cookieParser());
 
 // This allows the use of EJS
 app.set("view engine", "ejs");
@@ -45,8 +47,22 @@ app.get("/hello", (req, res) => {
 
 //Route handler for the URLS page
 app.get("/urls", (req, res) => {
-  const templateVars = { urls: urlDatabase };
+  const templateVars = { urls: urlDatabase , username: req.cookies['username']};
   res.render("urls_index", templateVars);
+});
+
+//Add endpoint to handle a POST to /login
+app.post('/login', (req, res) => {
+  const inputUsername = req.body.username;
+  res.cookie('username', inputUsername);
+  res.redirect('/urls');
+});
+
+//Add endpoint to handle a POST to /logout
+app.post('/logout', (req, res) => {
+  const inputUsername = req.body.username;
+  res.clearCookie('username', inputUsername);
+  res.redirect('/urls');
 });
 
 //Update URL in DB
@@ -87,13 +103,16 @@ app.get("/u/:shortURL", (req, res) => {
 
 // Route for New URL form
 app.get("/urls/new", (req, res) => {
-  res.render("urls_new");
+  const templateVars = {
+    username: req.cookies["username"],
+  };
+  res.render("urls_new", templateVars);
 });
 
 
 // Route handler that takes in a shortURL parameter
 app.get("/urls/:shortURL", (req, res) => {
-  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] };
+  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], username: req.cookies["username"],};
   res.render("urls_show", templateVars);
 });
 
