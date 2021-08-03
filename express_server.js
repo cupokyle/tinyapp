@@ -45,7 +45,9 @@ app.post("/urls", (req, res) => {
 });
 app.get("/u/:shortURL", (req, res) => {
   const longURL = urlDatabase[req.params.shortURL];
-  console.log(longURL);
+  if (!urlDatabase[req.params.shortURL]){
+    return res.status(404).send('Sorry, can\'t find that page.')
+  }
   res.redirect(longURL);
 });
 
