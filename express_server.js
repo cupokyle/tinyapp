@@ -49,6 +49,17 @@ app.get("/urls", (req, res) => {
   res.render("urls_index", templateVars);
 });
 
+//Update URL in DB
+app.post("/urls/:shortURL", (req, res) => {
+//extract shorturl from params
+  const oldURL = req.params.shortURL;
+  //extract new url value from the form => req.body
+  const currentURL = req.body.currentURL;
+  //update the quote content for that id
+  urlDatabase[oldURL] = currentURL;
+  res.redirect('/urls');
+});
+
 // POST route to handle form submission from user
 // And redirect to new Short URL page
 app.post("/urls", (req, res) => {
@@ -57,11 +68,12 @@ app.post("/urls", (req, res) => {
   res.redirect(`/urls/${shortURL}`);     // Respond with 'Ok' (we will replace this)
 });
 
+
 //Add a POST route that removes a URL resource: POST /urls/:shortURL/delete
 app.post("/urls/:shortURL/delete", (req, res) => {
   let shortURL = req.params.shortURL;
   delete urlDatabase[shortURL];
-  res.redirect('/urls/')
+  res.redirect('/urls/');
 });
 
 //Redirect Short URLs
