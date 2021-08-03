@@ -25,10 +25,24 @@ const generateRandomString = function() {
 };
 
 // Hard-coded starter data
+// URL Storage
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
 };
+
+// Hard-coded starter data
+// User Storage
+const users = {  "userRandomID": {
+  id: "userRandomID", 
+  email: "user@example.com", 
+  password: "purple-monkey-dinosaur"
+},
+"user2RandomID": {
+  id: "user2RandomID", 
+  email: "user2@example.com", 
+  password: "dishwasher-funk"
+}};
 
 // Registering a handler in the root path
 app.get("/", (req, res) => {
@@ -54,6 +68,21 @@ app.get("/urls", (req, res) => {
 //Route handler for the Registration page
 app.get("/register", (req, res) => {
   res.render("urls_register");
+});
+
+//Add endpoint to handle a POST to /register
+app.post('/register', (req, res) => {
+  const newUserID = generateRandomString();
+  const newUserEm = req.body.email;
+  const newUserPw = req.body.password;
+  users[newUserID] = {
+    id: newUserID, 
+    email: newUserEm, 
+    password: newUserPw
+  };
+  res.cookie('user_id', newUserID)
+  console.log(users);
+  res.redirect('/urls');
 });
 
 //Add endpoint to handle a POST to /login
