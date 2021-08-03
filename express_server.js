@@ -3,9 +3,9 @@ const express = require("express");
 const app = express();
 const PORT = 8080; // default port 8080
 const bodyParser = require("body-parser");
-var cookieParser = require('cookie-parser')
+let cookieParser = require('cookie-parser');
 app.use(bodyParser.urlencoded({extended: true}));
-app.use(cookieParser())
+app.use(cookieParser());
 
 // This allows the use of EJS
 app.set("view engine", "ejs");
@@ -54,10 +54,16 @@ app.get("/urls", (req, res) => {
 //Add endpoint to handle a POST to /login
 app.post('/login', (req, res) => {
   const inputUsername = req.body.username;
-  console.log(inputUsername)
   res.cookie('username', inputUsername);
   res.redirect('/urls');
-})
+});
+
+//Add endpoint to handle a POST to /logout
+app.post('/logout', (req, res) => {
+  const inputUsername = req.body.username;
+  res.clearCookie('username', inputUsername);
+  res.redirect('/urls');
+});
 
 //Update URL in DB
 app.post("/urls/:shortURL", (req, res) => {
