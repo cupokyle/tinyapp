@@ -51,6 +51,11 @@ app.get("/urls", (req, res) => {
   res.render("urls_index", templateVars);
 });
 
+//Route handler for the Registration page
+app.get("/register", (req, res) => {
+  res.render("urls_register");
+});
+
 //Add endpoint to handle a POST to /login
 app.post('/login', (req, res) => {
   const inputUsername = req.body.username;
