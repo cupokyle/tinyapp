@@ -51,6 +51,14 @@ app.get("/urls", (req, res) => {
   res.render("urls_index", templateVars);
 });
 
+//Add endpoint to handle a POST to /login
+app.post('/login', (req, res) => {
+  const inputUsername = req.body.username;
+  console.log(inputUsername)
+  res.cookie('username', inputUsername);
+  res.redirect('/urls');
+})
+
 //Update URL in DB
 app.post("/urls/:shortURL", (req, res) => {
 //extract shorturl from params
