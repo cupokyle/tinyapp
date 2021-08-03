@@ -13,8 +13,10 @@
       <div class="card-body">
         <h5 class="card-title">TinyURL for: <%= longURL %></h5>
         <p class="card-text">Short URL: <a href="/u/<%= shortURL %>"><%= shortURL %></a></p>
-        <form method="POST" action="/urls/<%= shortURL %>">  <input type="text" value="<%= longURL %>" name="currentURL"> <button class="btn btn-info">Update</button> </form>
-    <div class="card-footer text-muted"></div>
+        <div class="card-footer text-muted">
+          <h3>Edit:</h3>
+        <form method="POST" action="/urls/<%= shortURL %>">  <input style="width: 275px" type="text" value="<%= longURL %>" name="currentURL"> <button class="btn btn-info">Submit</button> </form>
+        </div>
   </div>
   <!-- Bootstrap JS -->
   <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
