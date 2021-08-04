@@ -31,6 +31,13 @@ const findUserByID = function(userID, objDatabase) {
     }
   }
 };
+const findUserByEmail = function(userEmail, objDatabase) {
+  for (const user in objDatabase) {
+    if (objDatabase[user].email === userEmail) {
+      return (objDatabase[user]);
+    }
+  }
+};
 
 // Hard-coded starter data
 // URL Storage
@@ -86,10 +93,11 @@ app.post('/register', (req, res) => {
   const newUserID = generateRandomString();
   const newUserEm = req.body.email;
   const newUserPw = req.body.password;
-  let templateVars = {error: ""};
-  if (users[newUserEm]) {
-    console.log("email already in use")
-  } else if (newUserEm && newUserPw) {
+  if (findUserByEmail(newUserEm, users)) {
+    res.status(400).send('Provided email address is already in use');
+  } else if (!newUserEm || !newUserPw) {
+    res.status(400).send('Please enter a valid email address and password');
+  } else {
     users[newUserID] = {
       id: newUserID,
       email: newUserEm,
@@ -97,9 +105,6 @@ app.post('/register', (req, res) => {
     };
     res.cookie('user_id', newUserID);
     res.redirect('/urls');
-  } else {
-    templateVars = {error: "Please enter a valid email address and password"};
-    res.render("urls_register", templateVars);
   }
 });
 
