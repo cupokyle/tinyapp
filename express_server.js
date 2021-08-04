@@ -4,6 +4,7 @@ const app = express();
 const PORT = 8080; // default port 8080
 const bodyParser = require("body-parser");
 let cookieParser = require('cookie-parser');
+const {findUserByID, findUserByEmail, verifyLogin} = require('./helpers/registerHelpers');
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieParser());
 
@@ -23,30 +24,6 @@ const generateRandomString = function() {
   }
   return solution;
 };
-
-const findUserByID = function(userID, objDatabase) {
-  for (const user in objDatabase) {
-    if (objDatabase[user].id === userID) {
-      return (objDatabase[user]);
-    }
-  }
-};
-const findUserByEmail = function(userEmail, objDatabase) {
-  for (const user in objDatabase) {
-    if (objDatabase[user].email === userEmail) {
-      return (objDatabase[user]);
-    }
-  }
-};
-const verifyLogin = function(userEmail, userPassword, objDatabase){
-  for (const user in objDatabase) {
-    if (objDatabase[user].email === userEmail){
-      if (objDatabase[user].password === userPassword) {
-        return (objDatabase[user]);
-      }
-    }    
-  }
-}
 
 // Hard-coded starter data
 // URL Storage
@@ -135,7 +112,7 @@ app.post('/login', (req, res) => {
 //Add endpoint to handle a POST to /logout
 app.post('/logout', (req, res) => {
   const thisUser = findUserByID(req.cookies.user_id, users);
-  res.clearCookie('user_id', thisUser.id);
+  res.clearCookie('user_id');
   res.redirect('/urls');
 });
 
