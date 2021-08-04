@@ -46,7 +46,7 @@ const users = {  "userRandomID": {
 },
 "johnny-test": {
   id: "johnny-test",
-  email: "1",
+  email: "123@123.com",
   password: "1"
 }};
 findUserByID('user2RandomID', users);
@@ -157,13 +157,17 @@ app.get("/u/:shortURL", (req, res) => {
   res.redirect(longURL);
 });
 
-// Route for New URL form
+// Route handler for New URL form
 app.get("/urls/new", (req, res) => {
   const thisUser = findUserByID(req.cookies.user_id, users);
   const templateVars = {
     user: thisUser,
   };
-  res.render("urls_new", templateVars);
+  if (thisUser){
+    res.render("urls_new", templateVars);
+  } else {
+    res.render("urls_login");
+  }
 });
 
 
