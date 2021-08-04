@@ -5,32 +5,12 @@ const PORT = 8080; // default port 8080
 const bodyParser = require("body-parser");
 let cookieParser = require('cookie-parser');
 const {findUserByID, findUserByEmail, verifyLogin} = require('./helpers/registerHelpers');
+const {generateRandomString, getUserURLS} = require('./helpers/urlHelpers');
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieParser());
 
 // This allows the use of EJS
 app.set("view engine", "ejs");
-
-// Generator to create random 6-char shortURLs
-
-const generateRandomString = function() {
-  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890";
-  let solution = "";
-  while (solution.length < 6) {
-    let thisChar = chars[Math.round(Math.random() * 62)];
-    if (thisChar !== undefined) {
-      solution += thisChar;
-    }
-  }
-  return solution;
-};
-
-// Hard-coded starter data
-// URL Storage
-// const urlDatabase = {
-//   "b2xVn2": "http://www.lighthouselabs.ca",
-//   "9sm5xK": "http://www.google.com"
-// };
 
 const urlDatabase = {
   b6UTxQ: {
@@ -47,20 +27,10 @@ const urlDatabase = {
   }
 };
 
-const getUserURLS = function(db, user) {
-  let myURLS = {};
-  for (const url in db) {
-    if (db[url].userID === user.id) {
-      myURLS[url] = db[url];
-    }
-  }
-  return myURLS;
-};
-
 // Hard-coded starter data
 // User Storage
-const users = {  "userRandomID": {
-  id: "userRandomID",
+const users = {  "aJ48lW": {
+  id: "aJ48lW",
   email: "user@example.com",
   password: "purple-monkey-dinosaur"
 },
@@ -74,7 +44,6 @@ const users = {  "userRandomID": {
   email: "123@123.com",
   password: "1"
 }};
-findUserByID('user2RandomID', users);
 
 // Registering a handler in the root path
 app.get("/", (req, res) => {
@@ -93,6 +62,9 @@ app.get("/hello", (req, res) => {
 
 //Route handler for the URLS page
 app.get("/urls", (req, res) => {
+  // if (!req.cookies.user_id){
+  //   res.redirect('/urls')
+  // }
   const thisUser = findUserByID(req.cookies.user_id, users);
   const userURLS = getUserURLS(urlDatabase, thisUser);
   const templateVars = { urls: userURLS , user: thisUser};
@@ -143,7 +115,7 @@ app.post('/login', (req, res) => {
 //Add endpoint to handle a POST to /logout
 app.post('/logout', (req, res) => {
   const thisUser = findUserByID(req.cookies.user_id, users);
-  res.clearCookie('user_id');
+  res.clearCookie('user_id', thisUser.id);
   res.redirect('/urls');
 });
 
@@ -151,14 +123,13 @@ app.post('/logout', (req, res) => {
 app.post("/urls/:shortURL", (req, res) => {
 //extract shorturl from params
   const thisURL = urlDatabase[req.params.shortURL];
-  console.log("this:", thisURL);
+
   //extract new url value from the form => req.body
   const updatedURL = req.body.currentURL;
-  console.log("updated:", updatedURL);
+
   //update the quote content for that id
   thisURL.longURL = updatedURL;
-  console.log("----URLS-----");
-  console.log(urlDatabase);
+
   res.redirect('/urls');
 });
 
@@ -181,7 +152,6 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 //Redirect Short URLs
 app.get("/u/:shortURL", (req, res) => {
   const thisURL = urlDatabase[req.params.shortURL];
-  console.log(thisURL);
   if (!urlDatabase[req.params.shortURL]) {
     return res.status(404).send('Sorry, can\'t find that page.');
   }
@@ -206,7 +176,6 @@ app.get("/urls/new", (req, res) => {
 app.get("/urls/:shortURL", (req, res) => {
   const thisUser = findUserByID(req.cookies.user_id, users);
   let thisURL = urlDatabase[req.params.shortURL];
-  console.log(thisURL);
   const templateVars = { shortURL: req.params.shortURL, longURL: thisURL.longURL, user: thisUser};
   res.render("urls_show", templateVars);
 });
