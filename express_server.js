@@ -43,6 +43,11 @@ const users = {  "userRandomID": {
   id: "user2RandomID",
   email: "user2@example.com",
   password: "dishwasher-funk"
+},
+"johnny-test": {
+  id: "johnny-test",
+  email: "1",
+  password: "1"
 }};
 findUserByID('user2RandomID', users);
 
