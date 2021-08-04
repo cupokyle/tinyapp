@@ -107,6 +107,11 @@ app.post('/register', (req, res) => {
   }
 });
 
+// Login Endpoint
+app.get("/login", (req, res) => {
+  res.render("urls_login");
+});
+
 //Add endpoint to handle a POST to /login
 app.post('/login', (req, res) => {
   const inputUsername = req.body.username;

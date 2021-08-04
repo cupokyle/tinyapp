@@ -9,23 +9,17 @@
         <a class="nav-item nav-link" href="/urls">My URLs</a>
         <a class="nav-item nav-link mr-5" href="/urls/new">Create New URL</a>
       </div>
-
     </div>
     <% if(!user){ %>
-      <form method="POST" class="form-inline" action="/login">
-        <div class="form-group">
-          <label class="text-white ml-5 mr-2">Log in:</label>
-          <input type="text" name="username" placeholder="username">
-          <button class="btn btn-info ml-3">Submit</button>
-        </div>          
-      </form>
+      <a href="/login"><button class="btn btn-warning mr-2">Login</button></a>
+      <a href="/register"><button class="btn btn-danger">Register</button></a>
       <% } else { %>
         <form method="POST" class="form-inline" action="/logout">
-        <div class="form-group">  
-        <label class="text-white ml-5 mr-2">Logged in as <%= user.email %></label>
-        <button class="btn btn-info ml-3">Logout</button>
-        </div>
-      </form>
-     <% } %>
+          <div class="form-group">  
+          <label class="text-white ml-5 mr-2">Logged in as <%= user.email %></label>
+          <button class="btn btn-warning ml-3">Logout</button>
+          </div>
+        </form>
+        <% } %>
   </nav>
 </header>
