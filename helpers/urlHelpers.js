@@ -10,7 +10,7 @@ const generateRandomString = function() {
   return solution;
 };
 
-const getUserURLS = function(db, user) {
+const urlsForUser = function(db, user) {
   let myURLS = {};
   if (!user) {
     return myURLS;
@@ -23,4 +23,4 @@ const getUserURLS = function(db, user) {
   return myURLS;
 };
 
-module.exports = {generateRandomString, getUserURLS};
+module.exports = {generateRandomString, urlsForUser};

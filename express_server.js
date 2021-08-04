@@ -5,7 +5,7 @@ const PORT = 8080; // default port 8080
 const bodyParser = require("body-parser");
 let cookieParser = require('cookie-parser');
 const {findUserByID, findUserByEmail, verifyLogin} = require('./helpers/registerHelpers');
-const {generateRandomString, getUserURLS} = require('./helpers/urlHelpers');
+const {generateRandomString, urlsForUser} = require('./helpers/urlHelpers');
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieParser());
 
@@ -63,11 +63,10 @@ app.get("/hello", (req, res) => {
 //Route handler for the URLS page
 app.get("/urls", (req, res) => {
   const thisUser = findUserByID(req.cookies.user_id, users);
-  const userURLS = getUserURLS(urlDatabase, thisUser);
+  const userURLS = urlsForUser(urlDatabase, thisUser);
   const templateVars = { urls: userURLS , user: thisUser, error: undefined};
   if (!thisUser) {
     templateVars['error'] = "You should like, log in or something.";
-    console.log(templateVars);
   }
   res.render("urls_index", templateVars);
 });
@@ -181,7 +180,7 @@ app.get("/urls/:shortURL", (req, res) => {
   res.render("urls_show", templateVars);
 });
 
-// Set our Port to listen (via Express) with console message
+// Set our Port to listen (via Express)
 app.listen(PORT, () => {
   console.log(`TinyApp listening on port ${PORT}!`);
 });
