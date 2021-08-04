@@ -84,8 +84,7 @@ app.get("/urls", (req, res) => {
 
 //Route handler for the Registration page
 app.get("/register", (req, res) => {
-  const templateVars = {error: ""};
-  res.render("urls_register", templateVars);
+  res.render("urls_register");
 });
 
 //Add endpoint to handle a POST to /register
