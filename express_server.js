@@ -2,8 +2,8 @@
 const express = require("express");
 const app = express();
 const PORT = 8080; // default port 8080
+const cookieParser = require('cookie-parser');
 const bodyParser = require("body-parser");
-let cookieParser = require('cookie-parser');
 const {findUserByID, findUserByEmail, verifyLogin} = require('./helpers/registerHelpers');
 const {generateRandomString, urlsForUser} = require('./helpers/urlHelpers');
 app.use(bodyParser.urlencoded({extended: true}));
@@ -119,18 +119,33 @@ app.post('/logout', (req, res) => {
   res.redirect('/urls');
 });
 
+//Add a POST route that removes a URL resource: POST /urls/:shortURL/delete
+app.post("/urls/:shortURL/delete", (req, res) => {
+  let shortURL = req.params.shortURL;
+  const urlOwnerID = urlDatabase[shortURL].userID;
+  const myCookieID = req.cookies["user_id"];
+  if (myCookieID === urlOwnerID) {
+    delete urlDatabase[shortURL];
+    res.redirect('/urls/');
+  } else {
+    return res.status(401).send('You can\'t do that! \n');
+  }
+});
+
 //Update URL in DB
 app.post("/urls/:shortURL", (req, res) => {
 //extract shorturl from params
   const thisURL = urlDatabase[req.params.shortURL];
-
-  //extract new url value from the form => req.body
-  const updatedURL = req.body.currentURL;
-
-  //update the quote content for that id
-  thisURL.longURL = updatedURL;
-
-  res.redirect('/urls');
+  const myCookieID = req.cookies["user_id"];
+  if (myCookieID === thisURL.userID) {
+    //extract new url value from the form => req.body
+    const updatedURL = req.body.currentURL;
+    //update the quote content for that id
+    thisURL.longURL = updatedURL;
+    res.redirect('/urls');
+  } else {
+    return res.status(401).send('You can\'t do that! \n');
+  }
 });
 
 // POST route to handle form submission from user
@@ -142,12 +157,6 @@ app.post("/urls", (req, res) => {
 });
 
 
-//Add a POST route that removes a URL resource: POST /urls/:shortURL/delete
-app.post("/urls/:shortURL/delete", (req, res) => {
-  let shortURL = req.params.shortURL;
-  delete urlDatabase[shortURL];
-  res.redirect('/urls/');
-});
 
 //Redirect Short URLs
 app.get("/u/:shortURL", (req, res) => {
@@ -182,6 +191,7 @@ app.get("/urls/:shortURL", (req, res) => {
   }
   res.render("urls_show", templateVars);
 });
+
 
 // Set our Port to listen (via Express)
 app.listen(PORT, () => {
