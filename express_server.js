@@ -27,9 +27,34 @@ const generateRandomString = function() {
 
 // Hard-coded starter data
 // URL Storage
+// const urlDatabase = {
+//   "b2xVn2": "http://www.lighthouselabs.ca",
+//   "9sm5xK": "http://www.google.com"
+// };
+
 const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
+  b6UTxQ: {
+    longURL: "https://www.tsn.ca",
+    userID: "aJ48lW"
+  },
+  i3BoGr: {
+    longURL: "https://www.google.ca",
+    userID: "aJ48lW"
+  },
+  AbbAAb: {
+    longURL: "https://www.lego.com",
+    userID: "johnny-test"
+  }
+};
+
+const getUserURLS = function(db, user) {
+  let myURLS = {};
+  for (const url in db) {
+    if (db[url].userID === user.id) {
+      myURLS[url] = db[url];
+    }
+  }
+  return myURLS;
 };
 
 // Hard-coded starter data
@@ -69,7 +94,8 @@ app.get("/hello", (req, res) => {
 //Route handler for the URLS page
 app.get("/urls", (req, res) => {
   const thisUser = findUserByID(req.cookies.user_id, users);
-  const templateVars = { urls: urlDatabase , user: thisUser};
+  const userURLS = getUserURLS(urlDatabase, thisUser);
+  const templateVars = { urls: userURLS , user: thisUser};
   res.render("urls_index", templateVars);
 });
 
@@ -105,12 +131,12 @@ app.get("/login", (req, res) => {
 
 //Add endpoint to handle a POST to /login
 app.post('/login', (req, res) => {
-  const thisUser = verifyLogin(req.body.email, req.body.password, users)
-  if(thisUser){
-  res.cookie('user_id', thisUser.id);
-  res.redirect('/urls');
+  const thisUser = verifyLogin(req.body.email, req.body.password, users);
+  if (thisUser) {
+    res.cookie('user_id', thisUser.id);
+    res.redirect('/urls');
   } else {
-  return res.status(403).send('You\'ve entered an incorrect email address or password. Try again.');
+    return res.status(403).send('You\'ve entered an incorrect email address or password. Try again.');
   }
 });
 
@@ -124,20 +150,24 @@ app.post('/logout', (req, res) => {
 //Update URL in DB
 app.post("/urls/:shortURL", (req, res) => {
 //extract shorturl from params
-  const oldURL = req.params.shortURL;
+  const thisURL = urlDatabase[req.params.shortURL];
+  console.log("this:", thisURL);
   //extract new url value from the form => req.body
-  const currentURL = req.body.currentURL;
+  const updatedURL = req.body.currentURL;
+  console.log("updated:", updatedURL);
   //update the quote content for that id
-  urlDatabase[oldURL] = currentURL;
+  thisURL.longURL = updatedURL;
+  console.log("----URLS-----");
+  console.log(urlDatabase);
   res.redirect('/urls');
 });
 
 // POST route to handle form submission from user
 // And redirect to new Short URL page
 app.post("/urls", (req, res) => {
-  let shortURL = generateRandomString();
-  urlDatabase[shortURL] = req.body.longURL;
-  res.redirect(`/urls/${shortURL}`);     // Respond with 'Ok' (we will replace this)
+  const shortURL = generateRandomString();
+  urlDatabase[shortURL] = { longURL: req.body.longURL, userID: req.cookies.user_id};
+  res.redirect(`/urls/${shortURL}`);
 });
 
 
@@ -150,11 +180,12 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 
 //Redirect Short URLs
 app.get("/u/:shortURL", (req, res) => {
-  const longURL = urlDatabase[req.params.shortURL];
+  const thisURL = urlDatabase[req.params.shortURL];
+  console.log(thisURL);
   if (!urlDatabase[req.params.shortURL]) {
     return res.status(404).send('Sorry, can\'t find that page.');
   }
-  res.redirect(longURL);
+  res.redirect(thisURL.longURL);
 });
 
 // Route handler for New URL form
@@ -163,7 +194,7 @@ app.get("/urls/new", (req, res) => {
   const templateVars = {
     user: thisUser,
   };
-  if (thisUser){
+  if (thisUser) {
     res.render("urls_new", templateVars);
   } else {
     res.render("urls_login");
@@ -174,7 +205,9 @@ app.get("/urls/new", (req, res) => {
 // Route handler that takes in a shortURL parameter
 app.get("/urls/:shortURL", (req, res) => {
   const thisUser = findUserByID(req.cookies.user_id, users);
-  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], user: thisUser};
+  let thisURL = urlDatabase[req.params.shortURL];
+  console.log(thisURL);
+  const templateVars = { shortURL: req.params.shortURL, longURL: thisURL.longURL, user: thisUser};
   res.render("urls_show", templateVars);
 });
 

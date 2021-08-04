@@ -12,14 +12,14 @@ const findUserByEmail = function(userEmail, objDatabase) {
     }
   }
 };
-const verifyLogin = function(userEmail, userPassword, objDatabase){
+const verifyLogin = function(userEmail, userPassword, objDatabase) {
   for (const user in objDatabase) {
-    if (objDatabase[user].email === userEmail){
+    if (objDatabase[user].email === userEmail) {
       if (objDatabase[user].password === userPassword) {
         return (objDatabase[user]);
       }
-    }    
+    }
   }
-}
+};
 
 module.exports = {findUserByID, findUserByEmail, verifyLogin};
