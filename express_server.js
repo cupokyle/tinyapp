@@ -38,6 +38,15 @@ const findUserByEmail = function(userEmail, objDatabase) {
     }
   }
 };
+const verifyLogin = function(userEmail, userPassword, objDatabase){
+  for (const user in objDatabase) {
+    if (objDatabase[user].email === userEmail){
+      if (objDatabase[user].password === userPassword) {
+        return (objDatabase[user]);
+      }
+    }    
+  }
+}
 
 // Hard-coded starter data
 // URL Storage
@@ -93,7 +102,7 @@ app.post('/register', (req, res) => {
   const newUserEm = req.body.email;
   const newUserPw = req.body.password;
   if (findUserByEmail(newUserEm, users)) {
-    res.status(400).send('Provided email address is already in use');
+    res.status(400).send('Provided email address is already registered to an account');
   } else if (!newUserEm || !newUserPw) {
     res.status(400).send('Please enter a valid email address and password');
   } else {
@@ -114,9 +123,13 @@ app.get("/login", (req, res) => {
 
 //Add endpoint to handle a POST to /login
 app.post('/login', (req, res) => {
-  const inputUsername = req.body.username;
-  res.cookie('username', inputUsername);
+  const thisUser = verifyLogin(req.body.email, req.body.password, users)
+  if(thisUser){
+  res.cookie('user_id', thisUser.id);
   res.redirect('/urls');
+  } else {
+  return res.status(403).send('You\'ve entered an incorrect email address or password. Try again.');
+  }
 });
 
 //Add endpoint to handle a POST to /logout
@@ -181,7 +194,7 @@ app.get("/urls/:shortURL", (req, res) => {
 
 // Set our Port to listen (via Express) with console message
 app.listen(PORT, () => {
-  console.log(`Example app listening on port ${PORT}!`);
+  console.log(`TinyApp listening on port ${PORT}!`);
 });
 
 
