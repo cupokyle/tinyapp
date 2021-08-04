@@ -13,7 +13,7 @@
   <body>
     <header>
       <nav class="navbar navbar-expand-md navbar-dark bg-success">
-        <a class="navbar-brand" href="/urls">TinyApp Registration</a>
+        <h3 class="navbar-brand">TinyApp Registration</h3>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
         </button>
@@ -29,6 +29,11 @@
           <button type="submit" class="btn btn-primary">Submit</button>
         </div>
       </form>
+      <div id="errorMessage">
+      <% if (error) { %>
+        <p class="text-danger ml-3"><%= error %></p>
+        <% }; %>
+      </div>
     </main>
       <!-- Bootstrap JS -->
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>

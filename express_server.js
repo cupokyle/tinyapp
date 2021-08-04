@@ -24,6 +24,14 @@ const generateRandomString = function() {
   return solution;
 };
 
+const findUserByID = function(userID, objDatabase) {
+  for (const user in objDatabase) {
+    if (objDatabase[user].id === userID) {
+      return (objDatabase[user]);
+    }
+  }
+};
+
 // Hard-coded starter data
 // URL Storage
 const urlDatabase = {
@@ -34,15 +42,16 @@ const urlDatabase = {
 // Hard-coded starter data
 // User Storage
 const users = {  "userRandomID": {
-  id: "userRandomID", 
-  email: "user@example.com", 
+  id: "userRandomID",
+  email: "user@example.com",
   password: "purple-monkey-dinosaur"
 },
 "user2RandomID": {
-  id: "user2RandomID", 
-  email: "user2@example.com", 
+  id: "user2RandomID",
+  email: "user2@example.com",
   password: "dishwasher-funk"
 }};
+findUserByID('user2RandomID', users);
 
 // Registering a handler in the root path
 app.get("/", (req, res) => {
@@ -61,13 +70,15 @@ app.get("/hello", (req, res) => {
 
 //Route handler for the URLS page
 app.get("/urls", (req, res) => {
-  const templateVars = { urls: urlDatabase , username: req.cookies['username']};
+  const thisUser = findUserByID(req.cookies.user_id, users);
+  const templateVars = { urls: urlDatabase , user: thisUser};
   res.render("urls_index", templateVars);
 });
 
 //Route handler for the Registration page
 app.get("/register", (req, res) => {
-  res.render("urls_register");
+  const templateVars = {error: ""};
+  res.render("urls_register", templateVars);
 });
 
 //Add endpoint to handle a POST to /register
@@ -75,14 +86,21 @@ app.post('/register', (req, res) => {
   const newUserID = generateRandomString();
   const newUserEm = req.body.email;
   const newUserPw = req.body.password;
-  users[newUserID] = {
-    id: newUserID, 
-    email: newUserEm, 
-    password: newUserPw
-  };
-  res.cookie('user_id', newUserID)
-  console.log(users);
-  res.redirect('/urls');
+  let templateVars = {error: ""};
+  if (users[newUserEm]) {
+    console.log("email already in use")
+  } else if (newUserEm && newUserPw) {
+    users[newUserID] = {
+      id: newUserID,
+      email: newUserEm,
+      password: newUserPw
+    };
+    res.cookie('user_id', newUserID);
+    res.redirect('/urls');
+  } else {
+    templateVars = {error: "Please enter a valid email address and password"};
+    res.render("urls_register", templateVars);
+  }
 });
 
 //Add endpoint to handle a POST to /login
@@ -94,8 +112,8 @@ app.post('/login', (req, res) => {
 
 //Add endpoint to handle a POST to /logout
 app.post('/logout', (req, res) => {
-  const inputUsername = req.body.username;
-  res.clearCookie('username', inputUsername);
+  const thisUser = findUserByID(req.cookies.user_id, users);
+  res.clearCookie('user_id', thisUser.id);
   res.redirect('/urls');
 });
 
@@ -137,8 +155,9 @@ app.get("/u/:shortURL", (req, res) => {
 
 // Route for New URL form
 app.get("/urls/new", (req, res) => {
+  const thisUser = findUserByID(req.cookies.user_id, users);
   const templateVars = {
-    username: req.cookies["username"],
+    user: thisUser,
   };
   res.render("urls_new", templateVars);
 });
@@ -146,7 +165,8 @@ app.get("/urls/new", (req, res) => {
 
 // Route handler that takes in a shortURL parameter
 app.get("/urls/:shortURL", (req, res) => {
-  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], username: req.cookies["username"],};
+  const thisUser = findUserByID(req.cookies.user_id, users);
+  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], user: thisUser};
   res.render("urls_show", templateVars);
 });
 
