@@ -176,7 +176,10 @@ app.get("/urls/new", (req, res) => {
 app.get("/urls/:shortURL", (req, res) => {
   const thisUser = findUserByID(req.cookies.user_id, users);
   let thisURL = urlDatabase[req.params.shortURL];
-  const templateVars = { shortURL: req.params.shortURL, longURL: thisURL.longURL, user: thisUser};
+  const templateVars = { shortURL: req.params.shortURL, longURL: thisURL.longURL, user: thisUser, error: undefined};
+  if (!thisUser) {
+    templateVars['error'] = "Please register or log in to your account to view this URL";
+  }
   res.render("urls_show", templateVars);
 });
 
