@@ -62,12 +62,13 @@ app.get("/hello", (req, res) => {
 
 //Route handler for the URLS page
 app.get("/urls", (req, res) => {
-  // if (!req.cookies.user_id){
-  //   res.redirect('/urls')
-  // }
   const thisUser = findUserByID(req.cookies.user_id, users);
   const userURLS = getUserURLS(urlDatabase, thisUser);
-  const templateVars = { urls: userURLS , user: thisUser};
+  const templateVars = { urls: userURLS , user: thisUser, error: undefined};
+  if (!thisUser) {
+    templateVars['error'] = "You should like, log in or something.";
+    console.log(templateVars);
+  }
   res.render("urls_index", templateVars);
 });
 
