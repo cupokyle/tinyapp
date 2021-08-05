@@ -158,12 +158,11 @@ app.get("/u/:shortURL", (req, res) => {
 
 //POST Route that deletes a URL from myURLS
 app.post("/urls/:shortURL/delete", (req, res) => {
-  let shortURL = req.params.shortURL;
-  const urlOwnerID = urlDatabase[shortURL].userID;
-  let myCookieID = req.session.user_id;
-  if (myCookieID === urlOwnerID) {
+  const userID = req.session.user_id;
+  const shortURL = req.params.shortURL;
+  if (urlDatabase[shortURL].userID === userID) {
     delete urlDatabase[shortURL];
-    res.redirect('/urls/');
+    res.redirect("/urls");
   } else {
     return res.status(401).send('You can\'t do that! \n');
   }
