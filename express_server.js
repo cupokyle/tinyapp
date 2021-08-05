@@ -1,4 +1,5 @@
-// Including Dependencies & Hard-coding PORT
+//--------------SETTINGS---------------//
+
 const express = require("express");
 const app = express();
 const PORT = 8080; // default port 8080
@@ -8,9 +9,9 @@ const {findUserByID, findUserByEmail, verifyLogin} = require('./helpers/register
 const {generateRandomString, urlsForUser} = require('./helpers/urlHelpers');
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieParser());
-
-// This allows the use of EJS
 app.set("view engine", "ejs");
+
+//--------------EXAMPLE DATA---------------//
 
 const urlDatabase = {
   b6UTxQ: {
@@ -27,8 +28,6 @@ const urlDatabase = {
   }
 };
 
-// Hard-coded starter data
-// User Storage
 const users = {  "aJ48lW": {
   id: "aJ48lW",
   email: "user@example.com",
@@ -45,6 +44,8 @@ const users = {  "aJ48lW": {
   password: "1"
 }};
 
+//--------------RATHER POINTLESS---------------//
+
 // Registering a handler in the root path
 app.get("/", (req, res) => {
   res.send("Hello!");
@@ -60,7 +61,9 @@ app.get("/hello", (req, res) => {
   res.send("<html><body>Hello <b>World</b></body></html>\n");
 });
 
-//Route handler for the URLS page
+//------------INDEX ROUTES (/URLS)--------------//
+
+//GET Route handler for the /URLS page
 app.get("/urls", (req, res) => {
   const thisUser = findUserByID(req.cookies.user_id, users);
   const userURLS = urlsForUser(urlDatabase, thisUser);
@@ -71,12 +74,45 @@ app.get("/urls", (req, res) => {
   res.render("urls_index", templateVars);
 });
 
-//Route handler for the Registration page
+// POST Route with Redirect for /URLS
+app.post("/urls", (req, res) => {
+  const shortURL = generateRandomString();
+  urlDatabase[shortURL] = { longURL: req.body.longURL, userID: req.cookies.user_id};
+  res.redirect(`/urls/${shortURL}`);
+});
+
+//------------LOGIN/LOGOUT ROUTES--------------//
+
+//Login POST Endpoint
+app.post('/login', (req, res) => {
+  const thisUser = verifyLogin(req.body.email, req.body.password, users);
+  if (thisUser) {
+    res.cookie('user_id', thisUser.id);
+    res.redirect('/urls');
+  } else {
+    return res.status(403).send('You\'ve entered an incorrect email address or password. Try again.');
+  }
+});
+// Login GET ROUTE
+app.get("/login", (req, res) => {
+  res.render("urls_login");
+});
+
+//Logout POST Endpoint
+app.post('/logout', (req, res) => {
+  const thisUser = findUserByID(req.cookies.user_id, users);
+  res.clearCookie('user_id', thisUser.id);
+  res.redirect('/urls');
+});
+
+//------------REGISTER ROUTES--------------//
+
+//Registration GET Route
 app.get("/register", (req, res) => {
   res.render("urls_register");
 });
 
-//Add endpoint to handle a POST to /register
+//Registration POST Endpoint
 app.post('/register', (req, res) => {
   const newUserID = generateRandomString();
   const newUserEm = req.body.email;
@@ -96,30 +132,18 @@ app.post('/register', (req, res) => {
   }
 });
 
-// Login Endpoint
-app.get("/login", (req, res) => {
-  res.render("urls_login");
-});
+//------------/URLS/:shortURL ROUTES--------------//
 
-//Add endpoint to handle a POST to /login
-app.post('/login', (req, res) => {
-  const thisUser = verifyLogin(req.body.email, req.body.password, users);
-  if (thisUser) {
-    res.cookie('user_id', thisUser.id);
-    res.redirect('/urls');
-  } else {
-    return res.status(403).send('You\'ve entered an incorrect email address or password. Try again.');
+//GET Route that redirects shortURLs
+app.get("/u/:shortURL", (req, res) => {
+  const thisURL = urlDatabase[req.params.shortURL];
+  if (!urlDatabase[req.params.shortURL]) {
+    return res.status(404).send('Sorry, can\'t find that page.');
   }
+  res.redirect(thisURL.longURL);
 });
 
-//Add endpoint to handle a POST to /logout
-app.post('/logout', (req, res) => {
-  const thisUser = findUserByID(req.cookies.user_id, users);
-  res.clearCookie('user_id', thisUser.id);
-  res.redirect('/urls');
-});
-
-//Add a POST route that removes a URL resource: POST /urls/:shortURL/delete
+//POST Route that deletes a URL from myURLS
 app.post("/urls/:shortURL/delete", (req, res) => {
   let shortURL = req.params.shortURL;
   const urlOwnerID = urlDatabase[shortURL].userID;
@@ -132,7 +156,7 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   }
 });
 
-//Update URL in DB
+//POST Route that makes update to myURLS
 app.post("/urls/:shortURL", (req, res) => {
 //extract shorturl from params
   const thisURL = urlDatabase[req.params.shortURL];
@@ -147,27 +171,9 @@ app.post("/urls/:shortURL", (req, res) => {
     return res.status(401).send('You can\'t do that! \n');
   }
 });
+//------------/URLS/new ROUTE--------------//
 
-// POST route to handle form submission from user
-// And redirect to new Short URL page
-app.post("/urls", (req, res) => {
-  const shortURL = generateRandomString();
-  urlDatabase[shortURL] = { longURL: req.body.longURL, userID: req.cookies.user_id};
-  res.redirect(`/urls/${shortURL}`);
-});
-
-
-
-//Redirect Short URLs
-app.get("/u/:shortURL", (req, res) => {
-  const thisURL = urlDatabase[req.params.shortURL];
-  if (!urlDatabase[req.params.shortURL]) {
-    return res.status(404).send('Sorry, can\'t find that page.');
-  }
-  res.redirect(thisURL.longURL);
-});
-
-// Route handler for New URL form
+//GET Route for New URL form
 app.get("/urls/new", (req, res) => {
   const thisUser = findUserByID(req.cookies.user_id, users);
   const templateVars = {
@@ -180,23 +186,22 @@ app.get("/urls/new", (req, res) => {
   }
 });
 
+//------------/URLS/:shortURL Page Render--------------//
 
-// Route handler that takes in a shortURL parameter
+//GET Route that takes in shortURL and renders shortURL page.
 app.get("/urls/:shortURL", (req, res) => {
   const thisUser = findUserByID(req.cookies.user_id, users);
   let thisURL = urlDatabase[req.params.shortURL];
   const templateVars = { shortURL: req.params.shortURL, longURL: thisURL.longURL, user: thisUser, error: undefined};
   if (!thisUser) {
-    templateVars['error'] = "Please register or log in to your account to view this URL";
+    templateVars['error'] = "Please log in to your account to view this URL";
   }
   res.render("urls_show", templateVars);
 });
 
+// ------ PORT LISTENER ------ //
 
 // Set our Port to listen (via Express)
 app.listen(PORT, () => {
   console.log(`TinyApp listening on port ${PORT}!`);
 });
-
-
-//The order of route definitions matters! The GET /urls/new route needs to be defined before the GET /urls/:id route. Routes defined earlier will take precedence, so if we place this route after the /urls/:id definition, any calls to /urls/new will be handled by app.get("/urls/:id", ...) because Express will think that new is a route parameter. A good rule of thumb to follow is that routes should be ordered from most specific to least specific.
