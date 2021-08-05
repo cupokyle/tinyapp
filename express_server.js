@@ -81,7 +81,7 @@ app.get("/hello", (req, res) => {
 
 //GET Route handler for the /URLS page
 app.get("/urls", (req, res) => {
-  const thisUser = findUserByID(req.cookies.user_id, users);
+  const thisUser = findUserByID(req.session.user_id, users);
   const userURLS = urlsForUser(urlDatabase, thisUser);
   const templateVars = { urls: userURLS , user: thisUser, error: undefined};
   if (!thisUser) {
@@ -93,7 +93,7 @@ app.get("/urls", (req, res) => {
 // POST Route with Redirect for /URLS
 app.post("/urls", (req, res) => {
   const shortURL = generateRandomString();
-  urlDatabase[shortURL] = { longURL: req.body.longURL, userID: req.cookies.user_id};
+  urlDatabase[shortURL] = { longURL: req.body.longURL, userID: req.session.user_id};
   res.redirect(`/urls/${shortURL}`);
 });
 
@@ -103,7 +103,7 @@ app.post("/urls", (req, res) => {
 app.post('/login', (req, res) => {
   const thisUser = verifyLogin(req.body.email, req.body.password, users);
   if (thisUser) {
-    res.cookie('user_id', thisUser.id);
+    req.session.user_id = thisUser.id;  // edited with cookie session
     res.redirect('/urls');
   } else {
     return res.status(403).send('You\'ve entered an incorrect email address or password. Try again.');
@@ -116,9 +116,11 @@ app.get("/login", (req, res) => {
 
 //Logout POST Endpoint
 app.post('/logout', (req, res) => {
-  const thisUser = findUserByID(req.cookies.user_id, users);
-  res.clearCookie('user_id', thisUser.id);
+  const thisUser = findUserByID(req.session.user_id, users);
+  if (thisUser){
+  req.session.user_id = null;
   res.redirect('/urls');
+  }
 });
 
 //------------REGISTER ROUTES--------------//
@@ -145,8 +147,7 @@ app.post('/register', (req, res) => {
       email: newUserEm,
       password: hash
     };
-    console.log(users);
-    res.cookie('user_id', newUserID);
+    req.session.user_id = newUserID;  //editied with cookie session
     res.redirect('/urls');
   }
 });
@@ -166,7 +167,7 @@ app.get("/u/:shortURL", (req, res) => {
 app.post("/urls/:shortURL/delete", (req, res) => {
   let shortURL = req.params.shortURL;
   const urlOwnerID = urlDatabase[shortURL].userID;
-  const myCookieID = req.cookies["user_id"];
+  const myCookieID = req.session["user_id"];
   if (myCookieID === urlOwnerID) {
     delete urlDatabase[shortURL];
     res.redirect('/urls/');
@@ -181,14 +182,14 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 app.get("/urls/:shortURL/edit", (req, res) => {
   let shortURL = req.params.shortURL;
   const urlOwnerID = urlDatabase[shortURL].userID;
-  const myCookieID = req.cookies["user_id"];
+  const myCookieID = req.session["user_id"];
   res.redirect(`/urls/${shortURL}`)
 });
 
 //POST Route that makes update to myURLS
 app.post("/urls/:shortURL", (req, res) => {
   const thisURL = urlDatabase[req.params.shortURL];
-  const myCookieID = req.cookies["user_id"];
+  const myCookieID = req.session["user_id"];
   if (myCookieID === thisURL.userID) {
     //extract new url value from the form => req.body
     const updatedURL = req.body.currentURL;
@@ -203,7 +204,7 @@ app.post("/urls/:shortURL", (req, res) => {
 
 //GET Route for New URL form
 app.get("/urls/new", (req, res) => {
-  const thisUser = findUserByID(req.cookies.user_id, users);
+  const thisUser = findUserByID(req.session.user_id, users);
   const templateVars = {
     user: thisUser,
   };
@@ -218,7 +219,7 @@ app.get("/urls/new", (req, res) => {
 
 //GET Route that takes in shortURL and renders shortURL page.
 app.get("/urls/:shortURL", (req, res) => {
-  const thisUser = findUserByID(req.cookies.user_id, users);
+  const thisUser = findUserByID(req.session.user_id, users);
   let thisURL = urlDatabase[req.params.shortURL];
   let templateVars = {};
   if (!findURLInDatabase(req.params.shortURL, urlDatabase)) {
