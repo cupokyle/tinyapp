@@ -1,3 +1,5 @@
+const bcrypt = require('bcrypt');
+
 const findUserByID = function(userID, objDatabase) {
   for (const user in objDatabase) {
     if (objDatabase[user].id === userID) {
@@ -15,7 +17,7 @@ const findUserByEmail = function(userEmail, objDatabase) {
 const verifyLogin = function(userEmail, userPassword, objDatabase) {
   for (const user in objDatabase) {
     if (objDatabase[user].email === userEmail) {
-      if (objDatabase[user].password === userPassword) {
+      if (bcrypt.compareSync(userPassword, objDatabase[user].password)) {
         return (objDatabase[user]);
       }
     }

@@ -3,6 +3,7 @@
 const express = require("express");
 const app = express();
 const PORT = 8080; // default port 8080
+const bcrypt = require('bcrypt');
 const cookieParser = require('cookie-parser');
 const bodyParser = require("body-parser");
 const {findUserByID, findUserByEmail, verifyLogin} = require('./helpers/registerHelpers');
@@ -21,8 +22,6 @@ const findURLInDatabase = function(id, database) {
   }
   return false;
 };
-
-
 
 const urlDatabase = {
   b6UTxQ: {
@@ -133,11 +132,14 @@ app.post('/register', (req, res) => {
   } else if (!newUserEm || !newUserPw) {
     res.status(400).send('Please enter a valid email address and password');
   } else {
+    const salt = bcrypt.genSaltSync(10);
+    const hash = bcrypt.hashSync(newUserPw, salt)
     users[newUserID] = {
       id: newUserID,
       email: newUserEm,
-      password: newUserPw
+      password: hash
     };
+    console.log(users);
     res.cookie('user_id', newUserID);
     res.redirect('/urls');
   }
