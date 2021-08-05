@@ -13,6 +13,17 @@ app.set("view engine", "ejs");
 
 //--------------EXAMPLE DATA---------------//
 
+const findURLInDatabase = function(id, database) {
+  for (let url in database) {
+    if (url === id) {
+      return url;
+    }
+  }
+  return false;
+};
+
+
+
 const urlDatabase = {
   b6UTxQ: {
     longURL: "https://www.tsn.ca",
@@ -158,7 +169,6 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 
 //POST Route that makes update to myURLS
 app.post("/urls/:shortURL", (req, res) => {
-//extract shorturl from params
   const thisURL = urlDatabase[req.params.shortURL];
   const myCookieID = req.cookies["user_id"];
   if (myCookieID === thisURL.userID) {
@@ -192,9 +202,19 @@ app.get("/urls/new", (req, res) => {
 app.get("/urls/:shortURL", (req, res) => {
   const thisUser = findUserByID(req.cookies.user_id, users);
   let thisURL = urlDatabase[req.params.shortURL];
-  const templateVars = { shortURL: req.params.shortURL, longURL: thisURL.longURL, user: thisUser, error: undefined};
-  if (!thisUser) {
-    templateVars['error'] = "Please log in to your account to view this URL";
+  let templateVars = {};
+  if (!findURLInDatabase(req.params.shortURL, urlDatabase)) {
+    templateVars['error'] = "The URL you've requested does not exist!";
+    templateVars['user'] = null;
+  } else {
+  // let templateVars = { shortURL: req.params.shortURL, longURL: thisURL.longURL, user: thisUser, error: undefined};
+    templateVars['shortURL'] = req.params.shortURL;
+    templateVars['longURL'] = thisURL.longURL;
+    templateVars['user'] = thisUser;
+    templateVars['error'] = undefined;
+    if (!thisUser || thisUser.id !== thisURL.userID) {
+      templateVars['error'] = "Only the URL owner can access this URL";
+    }
   }
   res.render("urls_show", templateVars);
 });
