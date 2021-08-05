@@ -4,13 +4,19 @@ const express = require("express");
 const app = express();
 const PORT = 8080; // default port 8080
 const bcrypt = require('bcrypt');
-const cookieParser = require('cookie-parser');
+const cookieSession = require('cookie-session')
+// const cookieParser = require('cookie-parser');
 const bodyParser = require("body-parser");
 const {findUserByID, findUserByEmail, verifyLogin} = require('./helpers/registerHelpers');
 const {generateRandomString, urlsForUser} = require('./helpers/urlHelpers');
 app.use(bodyParser.urlencoded({extended: true}));
-app.use(cookieParser());
+// app.use(cookieParser());
 app.set("view engine", "ejs");
+
+app.use(cookieSession({
+  name: 'session',
+  keys: ['key1', 'key2']
+}))
 
 //--------------EXAMPLE DATA---------------//
 
