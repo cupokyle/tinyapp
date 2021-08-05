@@ -6,7 +6,7 @@ const PORT = 8080; // default port 8080
 const bcrypt = require('bcrypt');
 const cookieSession = require('cookie-session')
 const bodyParser = require("body-parser");
-const {findUserByID, findUserByEmail, verifyLogin, urlsForUser, generateRandomString} = require('./helpers');
+const {findUserByID, findUserByEmail, verifyLogin, urlsForUser, findURLInDatabase, generateRandomString} = require('./helpers');
 app.use(bodyParser.urlencoded({extended: true}));
 app.set("view engine", "ejs");
 
@@ -15,47 +15,11 @@ app.use(cookieSession({
   keys: ['key1', 'key2']
 }))
 
-//--------------EXAMPLE DATA---------------//
+//--------------SERVER DATABASES---------------//
 
-const findURLInDatabase = function(id, database) {
-  for (let url in database) {
-    if (url === id) {
-      return url;
-    }
-  }
-  return false;
-};
+const urlDatabase = {};
 
-const urlDatabase = {
-  b6UTxQ: {
-    longURL: "https://www.tsn.ca",
-    userID: "aJ48lW"
-  },
-  i3BoGr: {
-    longURL: "https://www.google.ca",
-    userID: "aJ48lW"
-  },
-  AbbAAb: {
-    longURL: "https://www.lego.com",
-    userID: "johnny-test"
-  }
-};
-
-const users = {  "aJ48lW": {
-  id: "aJ48lW",
-  email: "user@example.com",
-  password: "purple-monkey-dinosaur"
-},
-"user2RandomID": {
-  id: "user2RandomID",
-  email: "user2@example.com",
-  password: "dishwasher-funk"
-},
-"johnny-test": {
-  id: "johnny-test",
-  email: "123@123.com",
-  password: "1"
-}};
+const users = {};
 
 //--------------RATHER POINTLESS---------------//
 

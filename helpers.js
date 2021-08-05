@@ -49,4 +49,14 @@ const urlsForUser = function(db, user) {
   return myURLS;
 };
 
-module.exports = {findUserByID, findUserByEmail, verifyLogin, urlsForUser, generateRandomString};
+const findURLInDatabase = function(id, database) {
+  for (let url in database) {
+    if (url === id) {
+      return url;
+    }
+  }
+  return false;
+};
+
+
+module.exports = {findUserByID, findUserByEmail, verifyLogin, urlsForUser, findURLInDatabase, generateRandomString};
