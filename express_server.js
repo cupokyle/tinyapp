@@ -167,6 +167,16 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   }
 });
 
+//--------NEW---------//
+
+//POST Route that directs to edit page
+app.get("/urls/:shortURL/edit", (req, res) => {
+  let shortURL = req.params.shortURL;
+  const urlOwnerID = urlDatabase[shortURL].userID;
+  const myCookieID = req.cookies["user_id"];
+  res.redirect(`/urls/${shortURL}`)
+});
+
 //POST Route that makes update to myURLS
 app.post("/urls/:shortURL", (req, res) => {
   const thisURL = urlDatabase[req.params.shortURL];
