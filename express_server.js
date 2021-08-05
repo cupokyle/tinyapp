@@ -4,7 +4,7 @@ const express = require("express");
 const app = express();
 const PORT = 8080; // default port 8080
 const bcrypt = require('bcrypt');
-const cookieSession = require('cookie-session')
+const cookieSession = require('cookie-session');
 const bodyParser = require("body-parser");
 const {findUserByID, findUserByEmail, verifyLogin, urlsForUser, findURLInDatabase, generateRandomString} = require('./helpers');
 app.use(bodyParser.urlencoded({extended: true}));
@@ -13,32 +13,61 @@ app.set("view engine", "ejs");
 app.use(cookieSession({
   name: 'session',
   keys: ['key1', 'key2']
-}))
+}));
+//------------- DUMMY DATA -------------------//
+const urlDatabase = {
+  b6UTxQ: {
+    longURL: "https://www.tsn.ca",
+    userID: "aJ48lW"
+  },
+  i3BoGr: {
+    longURL: "https://www.google.ca",
+    userID: "aJ48lW"
+  },
+  AbbAAb: {
+    longURL: "https://www.lego.com",
+    userID: "johnny-test"
+  }
+};
 
-//--------------SERVER DATABASES---------------//
+const users = {    "userRandomID": {
+  id: "userRandomID",
+  email: "user@example.com",
+  password: "purple-monkey-dinosaur"
+},
+"user2RandomID": {
+  id: "user2RandomID",
+  email: "user2@example.com",
+  password: "dishwasher-funk"
+},
+"johnny-test": {
+  id: "johnny-test",
+  email: "123@123.com",
+  password: "1"
+}};
 
-const urlDatabase = {};
+//-----------ACTUAL SERVER DATABASES----------//
 
-const users = {};
+// const urlDatabase = {};
 
-//--------------RATHER POINTLESS---------------//
+// const users = {};
+
+//--------------ROOT / ---------------//
 
 // Registering a handler in the root path
 app.get("/", (req, res) => {
-  res.send("Hello!");
+  if (req.session.user_id) {
+    res.redirect('/urls');
+  }
+  res.redirect('/login');
 });
+
+//------------INDEX ROUTES (/URLS)--------------//
 
 // Displays urlDatabase as JSON
 app.get('/urls.json', (req, res) => {
   res.json(urlDatabase);
 });
-
-// Pointless hello handler ¯\_(ツ)_/¯
-app.get("/hello", (req, res) => {
-  res.send("<html><body>Hello <b>World</b></body></html>\n");
-});
-
-//------------INDEX ROUTES (/URLS)--------------//
 
 //GET Route handler for the /URLS page
 app.get("/urls", (req, res) => {
@@ -64,7 +93,7 @@ app.post("/urls", (req, res) => {
 app.post('/login', (req, res) => {
   const thisUser = verifyLogin(req.body.email, req.body.password, users);
   if (thisUser) {
-    req.session.user_id = thisUser.id;  // edited with cookie session
+    req.session.user_id = thisUser.id;
     res.redirect('/urls');
   } else {
     return res.status(403).send('You\'ve entered an incorrect email address or password. Try again.');
@@ -72,22 +101,25 @@ app.post('/login', (req, res) => {
 });
 // Login GET ROUTE
 app.get("/login", (req, res) => {
+  if (req.session.user_id) {
+    res.redirect('/urls');
+  }
   res.render("urls_login");
 });
 
 //Logout POST Endpoint
 app.post('/logout', (req, res) => {
-  const thisUser = findUserByID(req.session.user_id, users);
-  if (thisUser){
   req.session = null;
   res.redirect('/urls');
-  }
 });
 
 //------------REGISTER ROUTES--------------//
 
 //Registration GET Route
 app.get("/register", (req, res) => {
+  if (req.session.user_id) {
+    res.redirect('/urls');
+  }
   res.render("urls_register");
 });
 
@@ -102,13 +134,13 @@ app.post('/register', (req, res) => {
     res.status(400).send('Please enter a valid email address and password');
   } else {
     const salt = bcrypt.genSaltSync(10);
-    const hash = bcrypt.hashSync(newUserPw, salt)
+    const hash = bcrypt.hashSync(newUserPw, salt);
     users[newUserID] = {
       id: newUserID,
       email: newUserEm,
       password: hash
     };
-    req.session.user_id = newUserID;  //editied with cookie session
+    req.session.user_id = newUserID;
     res.redirect('/urls');
   }
 });
@@ -128,7 +160,7 @@ app.get("/u/:shortURL", (req, res) => {
 app.post("/urls/:shortURL/delete", (req, res) => {
   let shortURL = req.params.shortURL;
   const urlOwnerID = urlDatabase[shortURL].userID;
-  const myCookieID = req.session["user_id"];
+  let myCookieID = req.session.user_id;
   if (myCookieID === urlOwnerID) {
     delete urlDatabase[shortURL];
     res.redirect('/urls/');
@@ -137,14 +169,10 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   }
 });
 
-//--------NEW---------//
-
-//POST Route that directs to edit page
+//GET Route that directs to edit page
 app.get("/urls/:shortURL/edit", (req, res) => {
   let shortURL = req.params.shortURL;
-  const urlOwnerID = urlDatabase[shortURL].userID;
-  const myCookieID = req.session["user_id"];
-  res.redirect(`/urls/${shortURL}`)
+  res.redirect(`/urls/${shortURL}`);
 });
 
 //POST Route that makes update to myURLS
@@ -187,7 +215,6 @@ app.get("/urls/:shortURL", (req, res) => {
     templateVars['error'] = "The URL you've requested does not exist!";
     templateVars['user'] = null;
   } else {
-  // let templateVars = { shortURL: req.params.shortURL, longURL: thisURL.longURL, user: thisUser, error: undefined};
     templateVars['shortURL'] = req.params.shortURL;
     templateVars['longURL'] = thisURL.longURL;
     templateVars['user'] = thisUser;
