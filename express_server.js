@@ -1,19 +1,21 @@
 //--------------SETTINGS---------------//
 
 const express = require("express");
-const app = express();
-const PORT = 8080; // default port 8080
 const bcrypt = require('bcrypt');
 const cookieSession = require('cookie-session');
 const bodyParser = require("body-parser");
 const {findUserByID, findUserByEmail, verifyLogin, urlsForUser, findURLInDatabase, generateRandomString} = require('./helpers');
-app.use(bodyParser.urlencoded({extended: true}));
-app.set("view engine", "ejs");
 
+const PORT = 8080; // default port 8080
+
+const app = express();
+app.set("view engine", "ejs");
+app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieSession({
   name: 'session',
   keys: ['key1', 'key2']
 }));
+
 //------------- DUMMY DATA -------------------//
 const urlDatabase = {
   b6UTxQ: {
@@ -52,16 +54,6 @@ const users = {    "userRandomID": {
 
 // const users = {};
 
-//--------------ROOT / ---------------//
-
-// Registering a handler in the root path
-app.get("/", (req, res) => {
-  if (req.session.user_id) {
-    res.redirect('/urls');
-  }
-  res.redirect('/login');
-});
-
 //------------INDEX ROUTES (/URLS)--------------//
 
 // Displays urlDatabase as JSON
@@ -82,9 +74,14 @@ app.get("/urls", (req, res) => {
 
 // POST Route with Redirect for /URLS
 app.post("/urls", (req, res) => {
-  const shortURL = generateRandomString();
-  urlDatabase[shortURL] = { longURL: req.body.longURL, userID: req.session.user_id};
-  res.redirect(`/urls/${shortURL}`);
+  const thisUser = findUserByID(req.session.user_id, users);
+  if (thisUser.id) {
+    const shortURL = generateRandomString();
+    urlDatabase[shortURL] = { longURL: req.body.longURL, userID: req.session.user_id};
+    res.redirect(`/urls/${shortURL}`);
+  } else {
+    return res.status(401).send('You are not authorized to access this database.');
+  }
 });
 
 //------------LOGIN/LOGOUT ROUTES--------------//
@@ -103,7 +100,7 @@ app.post('/login', (req, res) => {
 app.get("/login", (req, res) => {
   const userId = req.session.userId;
   const user = users[userId];
-  templateVars = { user };
+  const templateVars = { user };
   if (req.session.user_id) {
     res.redirect('/urls');
   }
@@ -122,7 +119,7 @@ app.post('/logout', (req, res) => {
 app.get("/register", (req, res) => {
   const userId = req.session.userId;
   const user = users[userId];
-  templateVars = { user };
+  const templateVars = { user };
   if (req.session.user_id) {
     res.redirect('/urls');
   }
@@ -229,6 +226,16 @@ app.get("/urls/:shortURL", (req, res) => {
     }
   }
   res.render("urls_show", templateVars);
+});
+
+//--------------ROOT / ---------------//
+
+// Registering a handler in the root path
+app.get("/", (req, res) => {
+  if (req.session.user_id) {
+    return res.redirect('/urls');
+  }
+  res.redirect('/login');
 });
 
 // ------ PORT LISTENER ------ //
