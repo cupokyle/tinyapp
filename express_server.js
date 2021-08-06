@@ -101,10 +101,13 @@ app.post('/login', (req, res) => {
 });
 // Login GET ROUTE
 app.get("/login", (req, res) => {
+  const userId = req.session.userId;
+  const user = users[userId];
+  templateVars = { user };
   if (req.session.user_id) {
     res.redirect('/urls');
   }
-  res.render("urls_login");
+  res.render("urls_login", templateVars);
 });
 
 //Logout POST Endpoint
@@ -117,10 +120,13 @@ app.post('/logout', (req, res) => {
 
 //Registration GET Route
 app.get("/register", (req, res) => {
+  const userId = req.session.userId;
+  const user = users[userId];
+  templateVars = { user };
   if (req.session.user_id) {
     res.redirect('/urls');
   }
-  res.render("urls_register");
+  res.render("urls_register", templateVars);
 });
 
 //Registration POST Endpoint
@@ -199,7 +205,7 @@ app.get("/urls/new", (req, res) => {
   if (thisUser) {
     res.render("urls_new", templateVars);
   } else {
-    res.render("urls_login");
+    res.render("urls_login", templateVars);
   }
 });
 
