@@ -74,11 +74,10 @@ app.get("/urls", (req, res) => {
 
 // POST Route with Redirect for /URLS
 app.post("/urls", (req, res) => {
-  const thisUser = findUserByID(req.session.user_id, users);
-  if (thisUser.id) {
-    const shortURL = generateRandomString();
-    urlDatabase[shortURL] = { longURL: req.body.longURL, userID: req.session.user_id};
-    res.redirect(`/urls/${shortURL}`);
+  if (req.session.user_id){
+      const shortURL = generateRandomString();
+      urlDatabase[shortURL] = { longURL: req.body.longURL, userID: req.session.user_id};
+      return res.redirect(`/urls/${shortURL}`);
   } else {
     return res.status(401).send('You are not authorized to access this database.');
   }
@@ -98,13 +97,14 @@ app.post('/login', (req, res) => {
 });
 // Login GET ROUTE
 app.get("/login", (req, res) => {
-  const userId = req.session.userId;
+  const userId = req.session.user_id; // changed from req.session.userId
   const user = users[userId];
   const templateVars = { user };
   if (req.session.user_id) {
     res.redirect('/urls');
-  }
+  } else {
   res.render("urls_login", templateVars);
+  }
 });
 
 //Logout POST Endpoint
@@ -117,13 +117,14 @@ app.post('/logout', (req, res) => {
 
 //Registration GET Route
 app.get("/register", (req, res) => {
-  const userId = req.session.userId;
+  const userId = req.session.user_id; // changed from req.session.userId
   const user = users[userId];
-  const templateVars = { user };
+  const templateVars = { user: user };
   if (req.session.user_id) {
     res.redirect('/urls');
-  }
+  } else {
   res.render("urls_register", templateVars);
+  }
 });
 
 //Registration POST Endpoint
@@ -215,7 +216,7 @@ app.get("/urls/:shortURL", (req, res) => {
   let templateVars = {};
   if (!findURLInDatabase(req.params.shortURL, urlDatabase)) {
     templateVars['error'] = "The URL you've requested does not exist!";
-    templateVars['user'] = null;
+    templateVars['user'] = thisUser;
   } else {
     templateVars['shortURL'] = req.params.shortURL;
     templateVars['longURL'] = thisURL.longURL;
